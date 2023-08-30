@@ -1,0 +1,35 @@
+{
+    "name": "stakken",
+    "version": "0.0.1",
+
+    "dependencies": [
+        {
+          "name": "sdl2",
+          "features": ["x11"],
+          "platform": "linux"
+        },
+        {
+            "name": "sdl2",
+            "platform": "!linux"
+          },
+        {
+          "name": "sdl2-mixer",
+          "features": ["libvorbis"]
+        },
+        {
+            "name": "libvorbis"
+        },
+        {
+            "name": "libmodplug"
+        },
+        {
+            "name": "spdlog"
+        },
+        {
+            "name": "msdfgen"
+        },
+        {
+            "name": "glm"
+        }
+    ]
+}
