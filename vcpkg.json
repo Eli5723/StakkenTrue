@@ -26,10 +26,14 @@
             "name": "spdlog"
         },
         {
-            "name": "msdfgen"
+            "name": "msdfgen",
+            "features": ["extensions"]
         },
         {
             "name": "glm"
+        },
+        {
+            "name": "toml11"
         }
     ]
 }

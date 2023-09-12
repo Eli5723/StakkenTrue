@@ -20,6 +20,8 @@ typedef double f64;
 typedef int b32;
 typedef char b8;
 
+#define BIT(x) (1 << x)
+
 // i8 localize(i8 x) {
 //     i8 local_x = x / 32;
 //     if (x < 0)

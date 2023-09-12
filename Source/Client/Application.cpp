@@ -2,15 +2,48 @@
 
 #include <spdlog/spdlog.h>
 
+
+#include <Assets/Assets.hpp>
+#include <Draw/Draw.hpp>
+#include <UI/UI.hpp>
+#include <UI/Components.hpp>
+#include <Game/DrawGame.hpp>
+#include <Input/Input.hpp>
+#include <Draw/Background.hpp>
+#include <Game/Game.hpp>
+#include <Music.hpp>
+
 namespace Application
 {
-    const int DEFAULT_WIDTH = 720;
-    const int DEFAULT_HEIGHT = 640;
+    void MessageCallback(GLenum source,
+                         GLenum type,
+                         GLuint id,
+                         GLenum severity,
+                         GLsizei length,
+                         const GLchar *message,
+                         const void *userParam)
+    {
+        bool error = type == GL_DEBUG_TYPE_ERROR;
+        if (error)
+            spdlog::error("GL Error: {}", message);
+        else
+            spdlog::warn("GL Warning: {}", message);
+    }
+
+    const int DEFAULT_WIDTH = 1920;
+    const int DEFAULT_HEIGHT = 1080;
+
+    Engine::Draw::Viewport viewport{0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT};
 
     SDL_Window *window;
     SDL_GLContext context;
 
     bool running = true;
+
+    Core::Game::Game testGame;
+
+    Client::Input::Keyboard keyboard;
+    Engine::Assets::Font *font;
 
     void init()
     {
@@ -24,6 +57,21 @@ namespace Application
         context = SDL_GL_CreateContext(window);
         SDL_GL_SetSwapInterval(0);
         SDL_ShowCursor(true);
+
+        gl3wInit();
+        glDebugMessageCallback(MessageCallback, 0);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        UI::Init();
+        Music::Setup();
+        Game::setActiveTexture(Engine::Assets::Texture::Load("./Resources/Textures/Pieces/TGF.png"));
+        font = Engine::Assets::Font::Load("./Resources/Fonts/Roboto-Regular.ttf");
+
+        keyboard.profile.ReadKeyboardProfile("./Settings/Keyboard.toml");
+        Engine::Draw::Quad::Setup();
+        Engine::Draw::Background::Init(glm::vec2{DEFAULT_WIDTH, DEFAULT_HEIGHT});
+        testGame.StartGame();
 
         application_thread();
     }
@@ -44,11 +92,34 @@ namespace Application
                 events(event);
             }
 
+            keyboard.Update(2);
+    
+            Core::Game::EventStream stream = keyboard.GetInputStream();
+            testGame.ApplyEventStream(stream);
+            keyboard.Clear();
+
+            glClearColor(0.1f, 0.4f, 0.5f, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+            Engine::Draw::Background::Draw();
+
+            Engine::Draw::Quad::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
+            viewport.Activate();
+
+            Engine::Draw::Quad::BeginBatch();
+            testGame.Tick(2);
+            Game::drawGame({20.0f, 20.0f}, testGame);
+            
+            UI::Render();
+            Engine::Draw::Quad::Finish();
+            
+            char seedString[64];
+            sprintf(seedString, "Seed: %d", testGame.seed);
+            Engine::Draw::Text::Immediate({20.0f, 20.0f}, seedString, *font);
+
             SDL_GL_SwapWindow(window);
-            SDL_Delay(16);
+            SDL_Delay(2);
         }
     }
-
     void render_thread()
     {
     }
@@ -57,51 +128,51 @@ namespace Application
     {
         switch (event.type)
         {
-            case SDL_QUIT:
-            {
-                running = false;
-            }
-            break;
+        case SDL_QUIT:
+        {
+            running = false;
+        }
+        break;
 
-            case SDL_WINDOWEVENT:
-            {
-                events_window(event.window);
+        case SDL_WINDOWEVENT:
+        {
+            events_window(event.window);
+            return;
+        }
+        break;
+
+        case SDL_KEYDOWN:
+        {
+            if (event.key.repeat)
                 return;
-            }
-            break;
 
-            case SDL_KEYDOWN:
-            {
-                events_keydown(event.key);
-            }
-            break;
-            
+            events_keydown(event.key);
+        }
+        break;
 
-            case SDL_KEYUP:
-            {
-                events_keyup(event.key);
-            }
-            break;
-            
+        case SDL_KEYUP:
+        {
+            events_keyup(event.key);
+        }
+        break;
 
-            case SDL_MOUSEMOTION:
-            {
-                events_mousemotion(event.motion);
-            }
-            break;
-             
-            case SDL_MOUSEBUTTONDOWN:
-            {
-                events_mousedown(event.button);
-            }
-            break;
-            
-            case SDL_MOUSEBUTTONUP:
-            {
-                events_mouseup(event.button);
-            }
-            break;
-            
+        case SDL_MOUSEMOTION:
+        {
+            events_mousemotion(event.motion);
+        }
+        break;
+
+        case SDL_MOUSEBUTTONDOWN:
+        {
+            events_mousedown(event.button);
+        }
+        break;
+
+        case SDL_MOUSEBUTTONUP:
+        {
+            events_mouseup(event.button);
+        }
+        break;
         }
     }
 
@@ -118,9 +189,16 @@ namespace Application
 
     void events_keydown(const SDL_KeyboardEvent &event)
     {
-        spdlog::info("{}", event.keysym.sym);
         if (event.keysym.sym == SDLK_ESCAPE)
             stop();
+
+        if (event.keysym.sym == SDLK_F2)
+            testGame.StartGame();
+
+        if (event.keysym.sym == SDLK_F3)
+            Music::NextSong();
+
+        keyboard.KeyDown(event);
     }
 
     void events_keyup(const SDL_KeyboardEvent &event)
@@ -133,6 +211,7 @@ namespace Application
 
     void events_mousedown(const SDL_MouseButtonEvent &event)
     {
+        UI::Click(glm::vec2{event.x, event.y});
     }
 
     void events_mouseup(const SDL_MouseButtonEvent &event)
