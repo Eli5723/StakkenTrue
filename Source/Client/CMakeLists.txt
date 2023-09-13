@@ -8,12 +8,18 @@ add_executable(Stakken
 "./main.cpp"
 "./Application.cpp"
 "./File.cpp"
+"./View.cpp"
+
+"./Audio/Music.cpp"
+"./Audio/Sounds.cpp"
 
 "./Draw/Quad.cpp"
+"./Draw/Line.cpp"
 "./Draw/Shader.cpp"
 "./Draw/Viewport.cpp"
 "./Draw/Text.cpp"
 "./Draw/Background.cpp"
+"./Draw/Framebuffer.cpp"
 
 "./Assets/Font.cpp"
 "./Assets/Texture.cpp"
@@ -30,8 +36,6 @@ add_executable(Stakken
 
 "./Input/Gamepad.cpp"
 "./Input/Keyboard.cpp"
-
-"./Music.cpp"
 
 "gl3w.c"
 )

@@ -114,7 +114,7 @@ namespace Client
                     timeUntilRepeat = profile.repeatPeriod;
                 }
             }
-            else if (lastKey == profile.softDrop && keyState[profile.softDrop])
+            if (keyState[profile.softDrop])
             {
                 timeUntilSoftdrop -= elapsedMilliseconds;
                 if (timeUntilSoftdrop <= 0)
@@ -173,7 +173,6 @@ namespace Client
             if (scancode == profile.softDrop)
             {
                 output.push(Core::Game::GameEvent::SOFT_DROP);
-                lastKey = scancode;
                 timeUntilSoftdrop = profile.softdropDelay;
                 return;
             }

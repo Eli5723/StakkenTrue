@@ -1,4 +1,4 @@
-#include <Music.hpp>
+#include <Audio/Music.hpp>
 
 #include <SDL2/SDL_mixer.h>
 #include <spdlog/spdlog.h>
@@ -9,7 +9,7 @@
 #include <string>
 #include <filesystem>
 
-namespace Music {
+namespace Audio::Music {
     struct Settings {
         float volume = 1.0f;
         bool mute = false;

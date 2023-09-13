@@ -13,22 +13,15 @@ namespace Draw {
 
 struct Viewport
 {
-    i32 screen_x;
-    i32 screen_y;
-    i32 screen_width;
-    i32 screen_height;
+    u32 screen_x;
+    u32 screen_y;
+    u32 screen_width;
+    u32 screen_height;
 
     inline glm::highp_mat4 DefaultProjectionMatrix()
     {
         return glm::ortho(0.0f, (float)screen_width * .5f, (float)screen_height * .5f, 0.0f);
     }
-
-    void Activate()
-    {
-        glViewport(0, 0, screen_width, screen_height);
-        glScissor(screen_x, screen_y, screen_width, screen_height);
-    }
-
 };
 
 struct Camera

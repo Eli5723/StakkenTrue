@@ -2,8 +2,7 @@
 
 #include <defines.h>
 
-namespace Core {
-namespace Game {
+namespace Core::Game {
 
     using Tile = i8;
 
@@ -49,6 +48,7 @@ namespace Game {
     Tile* getPieceDefinition(Tile type, i8 rotation);
 
     // Return the grid of connections corresponding to the piece / rotation
-    i8* getPieceConnections(Tile type, i8 rotation);
-}
+    u8* getPieceConnections(Tile type, i8 rotation);
+    void printConnections();
+
 }

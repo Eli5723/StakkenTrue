@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Music {
+namespace Audio::Music {
     void Setup();
     void Shutdown();
     

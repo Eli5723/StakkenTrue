@@ -44,11 +44,47 @@ namespace Game
     inline void drawTile(glm::vec2 position, Core::Game::Tile tile, u8 connections)
     {
         Draw::Quad::Textured(position, {16.0f, 16.0f}, activeTexture->id, activePallete->colors[tile]);
+
+        // // Draw connections
+        // if (!(connections & Core::Game::UP))
+        // {
+        //     Draw::Line::Line(position, {position.x + 16.0f, position.y}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::RIGHT))
+        // {
+        //     Draw::Line::Line({position.x + 16.0f, position.y}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::DOWN))
+        // {
+        //     Draw::Line::Line({position.x, position.y + 16.0f}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::LEFT))
+        // {
+        //     Draw::Line::Line(position, {position.x, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        //}
     }
 
     inline void drawGhostTile(glm::vec2 position, Core::Game::Tile tile, u8 connections)
     {
         Draw::Quad::Textured(position, {16.0f, 16.0f}, activeTexture->id, activePallete->colors[tile] * 0.6f);
+
+        // Draw connections
+        // if (!(connections & Core::Game::UP))
+        // {
+        //     Draw::Line::Line(position, {position.x + 16.0f, position.y}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::RIGHT))
+        // {
+        //     Draw::Line::Line({position.x + 16.0f, position.y}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::DOWN))
+        // {
+        //     Draw::Line::Line({position.x, position.y + 16.0f}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
+        // if (!(connections & Core::Game::LEFT))
+        // {
+        //     Draw::Line::Line(position, {position.x, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+        // }
     }
 
     void drawGame(glm::vec2 position, Core::Game::Game& game) {
@@ -68,11 +104,12 @@ namespace Game
     {
 
         Core::Game::Tile* blockGrid = Core::Game::getPieceDefinition(type, rotation);
+        u8 *connections = Core::Game::getPieceConnections(type, rotation);
 
         for (int y = 0; y < 4; y++) {
             for (int x = 0; x < 4; x++) {
                 if (blockGrid[x + y*4] != -1) {
-                    drawTile(position + glm::vec2{TILE_SIZE*x, TILE_SIZE*y}, type, 0b00001111);
+                    drawTile(position + glm::vec2{TILE_SIZE*x, TILE_SIZE*y}, type, connections[x + y*4]);
                 }
             }
         }
@@ -82,11 +119,12 @@ namespace Game
     {
 
         Core::Game::Tile* blockGrid = Core::Game::getPieceDefinition(type, rotation);
+        u8 *connections = Core::Game::getPieceConnections(type, rotation);
 
         for (int y = 0; y < 4; y++) {
             for (int x = 0; x < 4; x++) {
                 if (blockGrid[x + y*4] != -1) {
-                    drawGhostTile(position + glm::vec2{TILE_SIZE*x, TILE_SIZE*y}, type, 0b00001111);
+                    drawGhostTile(position + glm::vec2{TILE_SIZE*x, TILE_SIZE*y}, type, connections[x + y*4]);
                 }
             }
         }
@@ -95,7 +133,7 @@ namespace Game
     void drawRow(glm::vec2 position, Core::Game::Row& row) {
         for (int x = 0; x < Core::Game::BOARD_COLUMNS; x++) {
             if (row.contents[x] != -1) {
-                drawTile(position + glm::vec2{TILE_SIZE*x, 0}, row.contents[x], 0b00001111);
+                drawTile(position + glm::vec2{TILE_SIZE*x, 0}, row.contents[x],  row.connections[x]);
             }
         } 
     }

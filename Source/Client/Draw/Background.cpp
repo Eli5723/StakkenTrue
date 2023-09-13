@@ -55,8 +55,7 @@ namespace Engine::Draw::Background
 
         void main()
         {
-            float r = (120.0 - gl_FragCoord.z) / 255.0;
-            FragColor = vec4(1.0f, 1.0f, 1.0f, r);
+            FragColor = vec4(1.0f, 1.0f, 1.0f, .8f);
         }
     )";
 

@@ -81,6 +81,7 @@ namespace Core::Game
         Piece(Tile type, u8 rotation)
         {
             defintion = getPieceDefinition(type, rotation);
+            connections = getPieceConnections(type, rotation);
             this->type = type;
             this->rotation = rotation;
             x = 3;
@@ -90,6 +91,7 @@ namespace Core::Game
         void Reset(Tile type, u8 rotation)
         {
             defintion = getPieceDefinition(type, rotation);
+            connections = getPieceConnections(type, rotation);
             this->type = type;
             this->rotation = rotation;
             x = 3;
@@ -100,18 +102,21 @@ namespace Core::Game
         {
             rotation = (rotation + 1) % 4;
             defintion = getPieceDefinition(type, rotation);
+            connections = getPieceConnections(type, rotation);
         }
 
         void RCCW()
         {
             rotation = (rotation + 3) % 4;
             defintion = getPieceDefinition(type, rotation);
+            connections = getPieceConnections(type, rotation);
         }
 
         void Flip()
         {
             rotation = (rotation + 2) % 4;
             defintion = getPieceDefinition(type, rotation);
+            connections = getPieceConnections(type, rotation);
         }
 
         inline Tile GetTile(int x, int y)
@@ -140,6 +145,7 @@ namespace Core::Game
         }
 
         Tile *defintion;
+        u8* connections;
         Tile type;
         i8 x;
         i8 y;

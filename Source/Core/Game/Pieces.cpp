@@ -1,8 +1,12 @@
 #include <Game/Pieces.hpp>
 
+#include <cstdio>
+
 namespace Core {
 namespace Game {
     
+    char PieceChars[7] = {'T', 'O', 'L', 'J', 'Z', 'S', 'I'};
+
     // 7 Mino variants, 4 possible rotations 4x4 grids
     Tile tiles[7 * 4 * 4 * 4] = {
         // T Piece
@@ -153,13 +157,209 @@ namespace Game {
         -1, 6,-1,-1,
         -1, 6,-1,-1,
     };
-    
+
+    u8 connections[7 * 4 * 4 * 4] = {
+        //T
+        0, 4, 0, 0,
+        2,11, 8, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        0, 7, 8, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+        0, 0, 0, 0,
+        2,14, 8, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        2,13, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+
+        //O
+        0, 6,12, 0,
+        0, 3, 9, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 6,12, 0,
+        0, 3, 9, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 6,12, 0,
+        0, 3, 9, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 6,12, 0,
+        0, 3, 9, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+
+        //L
+        0, 0, 4, 0,
+        2,10, 9, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        0, 5, 0, 0,
+        0, 3, 8, 0,
+        0, 0, 0, 0,
+
+        0, 0, 0, 0,
+        6,10, 8, 0,
+        1, 0, 0, 0,
+        0, 0, 0, 0,
+
+        2,12, 0, 0,
+        0, 5, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+
+        //J
+        4, 0, 0, 0,
+        3,10, 8, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 6, 8, 0,
+        0, 5, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+        0, 0, 0, 0,
+        2,10,12, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        0, 5, 0, 0,
+        2, 9, 0, 0,
+        0, 0, 0, 0,
+
+
+        //Z
+        2,12, 0, 0,
+        0, 3, 8, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 0, 4, 0,
+        0, 6, 9, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+        0, 0, 0, 0,
+        2,12, 0, 0,
+        0, 3, 8, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        6, 9, 0, 0,
+        1, 0, 0, 0,
+        0, 0, 0, 0,
+
+
+        //S
+        0, 6, 8, 0,
+        2, 9, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        0, 3,12, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 0,
+
+        0, 0, 0, 0,
+        0, 6, 8, 0,
+        2, 9, 0, 0,
+        0, 0, 0, 0,
+
+        4, 0, 0, 0,
+        3,12, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+
+
+        //I
+        0, 0, 0, 0,
+        2,10,10, 8,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+
+        0, 0, 4, 0,
+        0, 0, 5, 0,
+        0, 0, 5, 0,
+        0, 0, 1, 0,
+
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        2,10,10, 8,
+        0, 0, 0, 0,
+
+        0, 4, 0, 0,
+        0, 5, 0, 0,
+        0, 5, 0, 0,
+        0, 1, 0, 0,
+    };
+
+    bool occupied(int x, int y, Tile* position) {
+        if (x < 0 || x > 3) return false;
+        if (y < 0 || y > 3) return false;
+        return position[x + y * 4] != -1;
+    }
+
     const int GRID_SIZE = 4 * 4;
     const int ROTATION_COUNT = 4;
     const int TYPE_INDEX = GRID_SIZE * ROTATION_COUNT;
 
     Tile* getPieceDefinition(Tile type, i8 rotation) {
         return &tiles[type * TYPE_INDEX + rotation * GRID_SIZE];
+    }
+
+    u8* getPieceConnections(Tile type, i8 rotation) {
+        return &connections[type * TYPE_INDEX + rotation * GRID_SIZE];
+    }
+
+    // Prints the connections of each piece to a file
+    void printConnections() {
+        FILE *fp;
+        fp = fopen("./connections", "w");
+
+        for (int tile = 0; tile < 7; tile++) {
+            fprintf(fp, "\n//%c\n", PieceChars[tile]); // Rotation set
+            for (int rotation = 0; rotation < 4; rotation++) {
+                Tile* def = getPieceDefinition((Tile)tile, rotation);
+
+                for (int y = 0; y < 4; y++) {
+                    for (int x = 0; x < 4; x++) {
+                        int connections = 0;
+
+                        if (occupied(x, y, def)) {
+                            if (occupied(x, y - 1, def)) connections |= UP;
+                            if (occupied(x + 1, y, def)) connections |= RIGHT;
+                            if (occupied(x, y + 1, def)) connections |= DOWN;
+                            if (occupied(x - 1, y, def)) connections |= LEFT;
+                        }
+                        fprintf(fp, "%2d,", connections); // Tile
+                    }
+                    fprintf(fp, "\n"); // Row
+                }
+                fprintf(fp,"\n"); // Piece
+            }
+        }
+
+        fclose(fp);
     }
 }
 }

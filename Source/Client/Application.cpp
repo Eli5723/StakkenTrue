@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-
 #include <Assets/Assets.hpp>
 #include <Draw/Draw.hpp>
 #include <UI/UI.hpp>
@@ -11,7 +10,10 @@
 #include <Input/Input.hpp>
 #include <Draw/Background.hpp>
 #include <Game/Game.hpp>
-#include <Music.hpp>
+#include <Audio/Music.hpp>
+#include <View.hpp>
+
+#include <glm/ext/matrix_transform.hpp>
 
 namespace Application
 {
@@ -64,14 +66,18 @@ namespace Application
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         UI::Init();
-        Music::Setup();
+        Audio::Music::Setup();
+        Engine::View::Initialize(glm::vec2{DEFAULT_WIDTH, DEFAULT_HEIGHT});
         Game::setActiveTexture(Engine::Assets::Texture::Load("./Resources/Textures/Pieces/TGF.png"));
         font = Engine::Assets::Font::Load("./Resources/Fonts/Roboto-Regular.ttf");
 
         keyboard.profile.ReadKeyboardProfile("./Settings/Keyboard.toml");
         Engine::Draw::Quad::Setup();
+        Engine::Draw::Line::Setup();
         Engine::Draw::Background::Init(glm::vec2{DEFAULT_WIDTH, DEFAULT_HEIGHT});
         testGame.StartGame();
+
+        set_resolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         application_thread();
     }
@@ -93,28 +99,31 @@ namespace Application
             }
 
             keyboard.Update(2);
-    
+
             Core::Game::EventStream stream = keyboard.GetInputStream();
             testGame.ApplyEventStream(stream);
             keyboard.Clear();
 
-            glClearColor(0.1f, 0.4f, 0.5f, 1);
-            glClear(GL_COLOR_BUFFER_BIT);
+            Engine::View::StartFrame();
             Engine::Draw::Background::Draw();
 
             Engine::Draw::Quad::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
-            viewport.Activate();
+            Engine::Draw::Line::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
 
             Engine::Draw::Quad::BeginBatch();
+            Engine::Draw::Line::BeginBatch();
+
             testGame.Tick(2);
             Game::drawGame({20.0f, 20.0f}, testGame);
-            
+
             UI::Render();
             Engine::Draw::Quad::Finish();
-            
+            Engine::Draw::Line::Finish();
+
             char seedString[64];
             sprintf(seedString, "Seed: %d", testGame.seed);
             Engine::Draw::Text::Immediate({20.0f, 20.0f}, seedString, *font);
+            Engine::View::EndFrame();
 
             SDL_GL_SwapWindow(window);
             SDL_Delay(2);
@@ -184,6 +193,10 @@ namespace Application
             stop();
             return;
             break;
+
+        case SDL_WINDOWEVENT_RESIZED:
+            set_resolution(event.data1, event.data2);
+            break;
         }
     }
 
@@ -196,7 +209,7 @@ namespace Application
             testGame.StartGame();
 
         if (event.keysym.sym == SDLK_F3)
-            Music::NextSong();
+            Audio::Music::NextSong();
 
         keyboard.KeyDown(event);
     }
@@ -216,5 +229,15 @@ namespace Application
 
     void events_mouseup(const SDL_MouseButtonEvent &event)
     {
+    }
+
+    void set_resolution(u32 x, u32 y)
+    {
+        SDL_SetWindowSize(window, x, y);
+        viewport = Engine::Draw::Viewport{0, 0, x, y};
+        Engine::Draw::Quad::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
+        Engine::Draw::Line::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
+        Engine::View::Resize({x, y});
+        Engine::Draw::Background::SetResolution({x, y});
     }
 }

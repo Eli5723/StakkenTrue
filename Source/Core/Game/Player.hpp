@@ -7,31 +7,27 @@ namespace Core
     namespace Game
     {
 
-
-        struct InputStream {
-            
+        struct InputStream
+        {
         };
 
-        class Lobby {
-            public: 
+        class Lobby
+        {
+        public:
             void applyInput();
-            
+
         }
 
-
-        class Player {
+        class Player
+        {
         public:
-            
             std::string name;
 
-
-            
             Player() = default;
             ~Player() = default;
 
             void ApplyInput
-            
         }
-    }
+    } // namespace Game
 
-}
+} // namespace Core
