@@ -4,7 +4,7 @@
 #include <Assets/Assets.hpp>
 #include <Game/Pieces.hpp>
 
-#define rgbToFloat(r,g,b) {(float)r/255.0f,(float)g/255.0f,(float)b/255.0f,1.0f}
+constexpr glm::vec4 rgbToFloat(int r, int g, int b) { return glm::vec4{(float)r/255.0f,(float)g/255.0f,(float)b/255.0f,1.0f};};
 
 namespace Game
 {
@@ -27,9 +27,10 @@ namespace Game
     ColorPalette *activePallete = &defaultPallate;
     Assets::Texture *activeTexture;
 
-    const float TILE_SIZE = 16.0f;
-    const float boardWidth = TILE_SIZE * Core::Game::BOARD_COLUMNS;
-    const float BOARD_HEIGHT = TILE_SIZE * Core::Game::BOARD_ROWS;
+    // Colors
+    const float GHOST_ALPHA = 0.6f;
+    const glm::vec4 WHITE{1.0f, 1.0f, 1.0f, 1.0f};
+    const glm::vec4 BLACK{0.0f, 0.0f, 0.0f, 1.0f};
 
     void setActiveTexture(Assets::Texture *texture)
     {
@@ -43,48 +44,48 @@ namespace Game
 
     inline void drawTile(glm::vec2 position, Core::Game::Tile tile, u8 connections)
     {
-        Draw::Quad::Textured(position, {16.0f, 16.0f}, activeTexture->id, activePallete->colors[tile]);
+        Draw::Quad::Textured(position, {TILE_SIZE, TILE_SIZE}, activeTexture->id, activePallete->colors[tile]);
 
         // // Draw connections
-        // if (!(connections & Core::Game::UP))
-        // {
-        //     Draw::Line::Line(position, {position.x + 16.0f, position.y}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::RIGHT))
-        // {
-        //     Draw::Line::Line({position.x + 16.0f, position.y}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::DOWN))
-        // {
-        //     Draw::Line::Line({position.x, position.y + 16.0f}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::LEFT))
-        // {
-        //     Draw::Line::Line(position, {position.x, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        //}
+        if (!(connections & Core::Game::UP))
+        {
+            Draw::Line::Line(position, {position.x + TILE_SIZE, position.y}, WHITE);
+        }
+        if (!(connections & Core::Game::RIGHT))
+        {
+            Draw::Line::Line({position.x + TILE_SIZE, position.y}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE);
+        }
+        if (!(connections & Core::Game::DOWN))
+        {
+            Draw::Line::Line({position.x, position.y + TILE_SIZE}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE);
+        }
+        if (!(connections & Core::Game::LEFT))
+        {
+            Draw::Line::Line(position, {position.x, position.y + TILE_SIZE}, WHITE);
+        }
     }
 
     inline void drawGhostTile(glm::vec2 position, Core::Game::Tile tile, u8 connections)
     {
-        Draw::Quad::Textured(position, {16.0f, 16.0f}, activeTexture->id, activePallete->colors[tile] * 0.6f);
+        Draw::Quad::Textured(position, {TILE_SIZE, TILE_SIZE}, activeTexture->id, activePallete->colors[tile] * GHOST_ALPHA);
 
         // Draw connections
-        // if (!(connections & Core::Game::UP))
-        // {
-        //     Draw::Line::Line(position, {position.x + 16.0f, position.y}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::RIGHT))
-        // {
-        //     Draw::Line::Line({position.x + 16.0f, position.y}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::DOWN))
-        // {
-        //     Draw::Line::Line({position.x, position.y + 16.0f}, {position.x + 16.0f, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
-        // if (!(connections & Core::Game::LEFT))
-        // {
-        //     Draw::Line::Line(position, {position.x, position.y + 16.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
-        // }
+        if (!(connections & Core::Game::UP))
+        {
+            Draw::Line::Line(position, {position.x + TILE_SIZE, position.y}, WHITE * GHOST_ALPHA);
+        }
+        if (!(connections & Core::Game::RIGHT))
+        {
+            Draw::Line::Line({position.x + TILE_SIZE, position.y}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE * GHOST_ALPHA);
+        }
+        if (!(connections & Core::Game::DOWN))
+        {
+            Draw::Line::Line({position.x, position.y + TILE_SIZE}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE * GHOST_ALPHA);
+        }
+        if (!(connections & Core::Game::LEFT))
+        {
+            Draw::Line::Line(position, {position.x, position.y + TILE_SIZE}, WHITE * GHOST_ALPHA);
+        }
     }
 
     void drawGame(glm::vec2 position, Core::Game::Game& game) {
@@ -92,12 +93,12 @@ namespace Game
             auto ghostPosition = game.GetGhostPiecePosition();
             // Sum offsets below ghost piece
 
-            drawGhostPiece(position + glm::vec2{ghostPosition.first * 16.0f, (ghostPosition.second) * 16.0f}, game.currentPiece.type, game.currentPiece.rotation);
-            drawPiece(position + glm::vec2{game.currentPiece.x * 16.0f, (game.currentPiece.y) * 16.0f}, game.currentPiece.type, game.currentPiece.rotation);
+            drawGhostPiece(position + glm::vec2{ghostPosition.first * TILE_SIZE, (ghostPosition.second) * TILE_SIZE}, game.currentPiece.type, game.currentPiece.rotation);
+            drawPiece(position + glm::vec2{game.currentPiece.x * TILE_SIZE, (game.currentPiece.y) * TILE_SIZE}, game.currentPiece.type, game.currentPiece.rotation);
 
             // Draw piece preview
-            Draw::Quad::BorderBox(position + glm::vec2{boardWidth + 8.0f, 0.0f}, {TILE_SIZE * 4.0f, TILE_SIZE * 4.0f}, 1.0f, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f});
-            drawPiece(position + glm::vec2{boardWidth + 8.0f, 0.0f}, game.nextPiece.type, game.nextPiece.rotation);
+            Draw::Quad::BorderBox(position + glm::vec2{boardWidth + SCOREBOARD_GAP, 0.0f}, PREVIEW_SIZE, BORDER_WIDTH, WHITE, BLACK);
+            drawPiece(position + glm::vec2{boardWidth + SCOREBOARD_GAP, 0.0f}, game.nextPiece.type, game.nextPiece.rotation);
     }
 
     void drawPiece(glm::vec2 position, Core::Game::Tile type, i8 rotation)
@@ -140,15 +141,15 @@ namespace Game
 
     void drawBoard(glm::vec2 position, Core::Game::Game& game) {
         // Draw Border and background
-        Draw::Quad::BorderBox(position, {boardWidth, BOARD_HEIGHT}, 1.0f, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f});
+        Draw::Quad::BorderBox(position, {boardWidth, BOARD_HEIGHT}, BORDER_WIDTH, WHITE, BLACK);
 
         // Draw Rows, starting from the bottom
         float offset = BOARD_HEIGHT;
         for (int y = Core::Game::BOARD_ROWS - 1; y >= 0; y--) {
             // IF there is a gap, draw it and offset the next row
             offset-= game.rowGaps[y];
-            Draw::Quad::Flat(position + glm::vec2{0.0f, offset}, {boardWidth, game.rowGaps[y]}, {1.0f, 1.0f, 1.0f, 1.0f});
-            offset-= 16.0f;
+            Draw::Quad::Flat(position + glm::vec2{0.0f, offset}, {boardWidth, game.rowGaps[y]}, WHITE);
+            offset-= TILE_SIZE;
             drawRow(position + glm::vec2{0.0f, offset}, game.rows[y]);
         }
     }
@@ -158,6 +159,6 @@ namespace Game
     }
 
     void drawClearEffect(glm::vec2 position, float size) { 
-        Engine::Draw::Quad::Flat(position, {TILE_SIZE * Core::Game::BOARD_COLUMNS, size}, {1.0f, 1.0f, 1.0f, 1.0f});
+        Engine::Draw::Quad::Flat(position, {TILE_SIZE * Core::Game::BOARD_COLUMNS, size}, WHITE);
     }
 }

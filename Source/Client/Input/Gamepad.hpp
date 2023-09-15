@@ -9,7 +9,7 @@ namespace Client
         class Gamepad : public IController
         {
         public:
-            Core::Game::EventStream GetInputStream() override;
+            Core::Game::InputStream GetInputStream() override;
         };
     }
 }

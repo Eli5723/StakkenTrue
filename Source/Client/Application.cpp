@@ -9,11 +9,13 @@
 #include <Game/DrawGame.hpp>
 #include <Input/Input.hpp>
 #include <Draw/Background.hpp>
+
 #include <Game/Game.hpp>
-#include <Audio/Music.hpp>
+#include <Audio/Audio.hpp>
 #include <View.hpp>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <rocket.hpp>
 
 namespace Application
 {
@@ -66,7 +68,10 @@ namespace Application
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         UI::Init();
-        Audio::Music::Setup();
+        Audio::Init();
+        Audio::Music::Init();
+        Audio::Sound::Init();
+
         Engine::View::Initialize(glm::vec2{DEFAULT_WIDTH, DEFAULT_HEIGHT});
         Game::setActiveTexture(Engine::Assets::Texture::Load("./Resources/Textures/Pieces/TGF.png"));
         font = Engine::Assets::Font::Load("./Resources/Fonts/Roboto-Regular.ttf");
@@ -75,6 +80,33 @@ namespace Application
         Engine::Draw::Quad::Setup();
         Engine::Draw::Line::Setup();
         Engine::Draw::Background::Init(glm::vec2{DEFAULT_WIDTH, DEFAULT_HEIGHT});
+        
+        testGame.OnPieceLock += []() {
+            Audio::Sound::Play(Audio::Sound::SoundID::Lock);
+        };
+        testGame.OnLineClear += []() {
+            Audio::Sound::Play(Audio::Sound::SoundID::Clear);
+        };
+        testGame.OnSonicDrop += []() {
+            Audio::Sound::Play(Audio::Sound::SoundID::SonicDrop);
+        };
+        testGame.OnHardDrop += []() {
+            Audio::Sound::Play(Audio::Sound::SoundID::HardDrop);
+        };
+        testGame.OnCombo += [](u32 combo) {
+            if (combo == 5) {
+                Audio::Sound::Play(Audio::Sound::SoundID::Combo5);
+            } else if (combo == 7) {
+                Audio::Sound::Play(Audio::Sound::SoundID::Combo7);
+            } else if (combo == 10) {
+                Audio::Sound::Play(Audio::Sound::SoundID::Combo10);
+            } else if (combo == 12) {
+                Audio::Sound::Play(Audio::Sound::SoundID::Combo12);
+            } else if (combo == 14) {
+                Audio::Sound::Play(Audio::Sound::SoundID::Combo14);
+            }
+        };
+
         testGame.StartGame();
 
         set_resolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -100,29 +132,40 @@ namespace Application
 
             keyboard.Update(2);
 
-            Core::Game::EventStream stream = keyboard.GetInputStream();
-            testGame.ApplyEventStream(stream);
+            Core::Game::InputStream stream = keyboard.GetInputStream();
+            testGame.ApplyInputStream(stream);
             keyboard.Clear();
+            testGame.Tick(2);
+
 
             Engine::View::StartFrame();
             Engine::Draw::Background::Draw();
 
+            Engine::Draw::Quad::EnableNormalShader();
             Engine::Draw::Quad::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
             Engine::Draw::Line::SetProjectionMatrix(viewport.DefaultProjectionMatrix());
 
             Engine::Draw::Quad::BeginBatch();
             Engine::Draw::Line::BeginBatch();
 
-            testGame.Tick(2);
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, 0.0f});
+            transform = glm::scale(transform, {1.3f, 1.3f, 1.0f});
+            Engine::Draw::Quad::SetTransformationMatrix(transform);
+            Engine::Draw::Line::SetTransformationMatrix(transform);
             Game::drawGame({20.0f, 20.0f}, testGame);
-
-            UI::Render();
             Engine::Draw::Quad::Finish();
             Engine::Draw::Line::Finish();
 
-            char seedString[64];
-            sprintf(seedString, "Seed: %d", testGame.seed);
-            Engine::Draw::Text::Immediate({20.0f, 20.0f}, seedString, *font);
+            char comboText[32];
+            sprintf(comboText, "Combo: %d", testGame.combo);
+            Engine::Draw::Text::Immediate({Game::GAME_SIZE.x, 92.0f}, comboText, *font);
+
+            Engine::Draw::Quad::SetTransformationMatrix(glm::mat4(1.0f));
+            Engine::Draw::Line::SetTransformationMatrix(glm::mat4(1.0f));
+
+            UI::Render();
+
+
             Engine::View::EndFrame();
 
             SDL_GL_SwapWindow(window);

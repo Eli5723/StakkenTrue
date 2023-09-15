@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Audio::Music {
-    void Setup();
+    void Init();
     void Shutdown();
     
     void NextSong();

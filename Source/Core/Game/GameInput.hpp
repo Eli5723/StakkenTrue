@@ -6,7 +6,7 @@ namespace Core
 {
     namespace Game
     {
-        enum class GameEvent : u8
+        enum class GameInput : u8
         {
             NONE,
 
@@ -34,8 +34,8 @@ namespace Core
             ADD_ROW,
         };
 
-        struct EventStream { 
-            GameEvent* events;
+        struct InputStream { 
+            GameInput* events;
             u32 size;
         };
     }

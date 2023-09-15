@@ -10,6 +10,7 @@ add_executable(Stakken
 "./File.cpp"
 "./View.cpp"
 
+"./Audio/Audio.cpp"
 "./Audio/Music.cpp"
 "./Audio/Sounds.cpp"
 

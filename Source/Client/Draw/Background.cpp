@@ -104,15 +104,15 @@ namespace Engine::Draw::Background
         }
 
         // Connect each point to form a grid
-        GLuint indices[vertex_x_count * vertex_y_count * 4];
-        for (int x = 0; x < vertex_x_count - 1; x++) {
-            for (int y = 0; y < vertex_y_count - 1; y++) {
+        GLuint indices[(vertex_x_count - 1) * (vertex_y_count - 1) * 4];
+        for (int x = 0; x < vertex_x_count - 2; x++) {
+            for (int y = 0; y < vertex_y_count - 2; y++) {
                 const int vertex_index = x + y * vertex_x_count;
 
-                indices[vertex_index * 4 + 0] = x + y * vertex_x_count;
+                indices[vertex_index * 4 + 0] = x + (y + 0) * vertex_x_count;
                 indices[vertex_index * 4 + 1] = x + (y + 1) * vertex_x_count;
-                indices[vertex_index * 4 + 2] = x + y * vertex_x_count;
-                indices[vertex_index * 4 + 3] = x + 1 + y * vertex_x_count;
+                indices[vertex_index * 4 + 2] = (x + 0) + y * vertex_x_count;
+                indices[vertex_index * 4 + 3] = (x + 1) + y * vertex_x_count;
             }
         }
 

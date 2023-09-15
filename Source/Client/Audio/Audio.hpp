@@ -1,8 +1,15 @@
 #pragma once
 
-#include 
+#include <Audio/Music.hpp>
+#include <Audio/Sounds.hpp>
+
+#include <SDL2/SDL_mixer.h>
 
 namespace Audio {
-    void Init();
+    bool InitializeMixer();
     void Shutdown();
+
+    bool Init();
+
+    SDL_AudioSpec& GetSpec();
 }

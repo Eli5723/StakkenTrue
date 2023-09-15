@@ -6,10 +6,10 @@ namespace Core
 {
     namespace Game
     {
-        void EventBuffer::push(GameEvent event) {
+        void InputBuffer::push(GameInput event) {
             if (size == capacity) {
                 capacity *= 2;
-                GameEvent* newEvents = new GameEvent[capacity];
+                GameInput* newEvents = new GameInput[capacity];
                 memcpy(newEvents, events, size);
                 delete[] events;
                 events = newEvents;
@@ -17,11 +17,11 @@ namespace Core
             events[size++] = event;
         }
 
-        EventStream EventBuffer::getStream() {
+        InputStream InputBuffer::getStream() {
             return { events, size };
         }
 
-        void EventBuffer::clear() {
+        void InputBuffer::clear() {
             size = 0;
         }
     }

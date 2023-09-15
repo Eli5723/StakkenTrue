@@ -2,19 +2,19 @@
 
 #include <defines.h>
 
-#include <Game/GameEvent.hpp>
+#include <Game/GameInput.hpp>
 
 namespace Core
 {
     namespace Game
     {
-        struct EventBuffer {
-            GameEvent* events = new GameEvent[32];
+        struct InputBuffer {
+            GameInput* events = new GameInput[32];
             u32 size = 32;
             u32 capacity = 32;
 
-            void push(GameEvent event);
-            EventStream getStream();
+            void push(GameInput event);
+            InputStream getStream();
             void clear();
         };
     }

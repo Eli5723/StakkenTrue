@@ -4,14 +4,14 @@
 
 #include <Randomizers/Randomizers.hpp>
 #include <Game/Pieces.hpp>
-#include <Game/GameEvent.hpp>
+#include <Game/GameInput.hpp>
 
 #include <utility>
 #include <cstring>
+#include <rocket.hpp>
 
 namespace Core::Game
 {
-
     union RotationTable
     {
         u8 pieces[7];
@@ -166,9 +166,38 @@ namespace Core::Game
         XoroshiroRandomizer holeRandomizer{};
         u64 seed;
 
+        u32 gravityPeriod = 0;
+        u32 gravityTimer = 0;
+
+        u32 lockDelay = 300;
+        u32 lockTimer = 0;
+
+        i32 comboTimer = 0;
+        u32 combo = 0;
+
+        constexpr static i32 ComboBonusTimeTable[]{
+            1200, 600, 300, 200, 100, 0, 0, 0, 0, 0, 0, 0, -100, -200, -300, -600, -1200, -1200
+        };
+
+        constexpr static i32 ComboGarbageTable[]{
+            0, 1, 1, 1, 2, 2, 3, 5, 7, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        };
+
+        constexpr static i32 ComboTimeTable[]{
+            2400, 1100, 400, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        };
+
         // Graphical effects
         float verticalOffset = 0;
         float rowGaps[BOARD_ROWS]{0};
+
+        rocket::signal<void()> OnGameStart;
+        rocket::signal<void()> OnPieceLock;
+        rocket::signal<void()> OnLineClear;
+        rocket::signal<void()> OnSonicDrop;
+        rocket::signal<void()> OnHardDrop;
+        rocket::signal<void(u32 combo)> OnCombo;
+        
 
         // Helpers
         inline bool BoundsY(u8 y)
@@ -181,9 +210,10 @@ namespace Core::Game
             return x >= 0 && x < BOARD_COLUMNS;
         }
 
-        inline void SetTile(u8 x, u8 y, Tile tile)
+        inline void SetTile(u8 x, u8 y, Tile tile, u8 connections)
         {
             rows[y].contents[x] = tile;
+            rows[y].connections[x] = connections;
             rows[y].fill++;
         }
 
@@ -200,9 +230,8 @@ namespace Core::Game
 
         void LockPiece(Piece &piece);
         bool OffsetTest();
-        void OnLineClear();
 
-        std::pair<u8,u8> GetGhostPiecePosition();
+        std::pair<i8,i8> GetGhostPiecePosition();
 
         // Gameplay
         void Tick(u8 dt);
@@ -218,6 +247,6 @@ namespace Core::Game
         void SoftDrop();
         void SonicDrop();
         void HardDrop();
-        void ApplyEventStream(EventStream &stream);
+        void ApplyInputStream(InputStream &stream);
     };
 }

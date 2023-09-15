@@ -36,7 +36,7 @@ namespace Client
         class Keyboard : public IController
         {
         public:
-            Core::Game::EventStream GetInputStream() override;
+            Core::Game::InputStream GetInputStream() override;
             void Update(int elapsedMilliseconds);
             void KeyDown(const SDL_KeyboardEvent& event);
             void Clear() { output.clear();}
@@ -45,7 +45,7 @@ namespace Client
             KeyboardProfile profile;
         private:
             // State
-            Core::Game::EventBuffer output;
+            Core::Game::InputBuffer output;
             int lastKey;
             int timeUntilRepeat;
             int timeUntilSoftdrop;

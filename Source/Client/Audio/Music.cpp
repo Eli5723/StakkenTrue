@@ -35,9 +35,14 @@ namespace Audio::Music {
     SDL_AudioSpec spec;
 
     void SetTrack(u32 track) {
+        // Stop the playing song
         if (state.music) {
             Mix_FreeMusic(state.music);
             state.music = NULL;
+        }
+
+        if (state.songs.size() == 0) {
+            return;
         }
 
         // Stop the playing song        
@@ -86,27 +91,11 @@ namespace Audio::Music {
         }
     }
 
-    void Setup() {
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-            spdlog::error("SDL_mixer could not initialize! SDL_mixer Error: {}\n", Mix_GetError());
-            return;
-        }
+    void Init() {
         state.audio_open = true;
-
-        spec.freq = MIX_DEFAULT_FREQUENCY;
-        spec.format = MIX_DEFAULT_FORMAT;
-        spec.channels = MIX_DEFAULT_CHANNELS;
-
         Mix_SetMusicCMD(SDL_getenv("MUSIC_CMD"));
-        Mix_QuerySpec(&spec.freq, &spec.format, (int*)&spec.channels);
 
         ScanMusicDirectory();
-        if (state.songs.size() == 0) {
-            spdlog::warn("No music files found! Shutting down audio subsystem.");
-            Shutdown();
-            return;
-        }
-        
         SetTrack(0);
     }
 

@@ -4,6 +4,8 @@
 #include <memory.h>
 #include <algorithm>
 
+#include <cstdio>
+
 namespace Core::Game
 {
 
@@ -75,20 +77,23 @@ namespace Core::Game
     void Game::LockPiece(Piece &piece)
     {
         int run = 0;
+        int cleared = 0;
 
+        // Lock piece
         for (int ty = 0; ty < 4; ty++)
         {
             for (int tx = 0; tx < 4; tx++)
             {
                 if (piece.defintion[tx + ty * 4] != GameTile::EMPTY)
                 {
-                    SetTile(piece.x + tx, piece.y + ty, piece.defintion[tx + ty * 4]);
+                    SetTile(piece.x + tx, piece.y + ty, piece.defintion[tx + ty * 4], piece.connections[tx + ty * 4]);
                 }
             }
 
             if (rows[piece.y + ty].filled())
             {
                 run++;
+                cleared++;
                 RemoveRow(piece.y + ty);
             } else {
                 rowGaps[piece.y + ty - 1] += run * 16.0f;
@@ -96,25 +101,34 @@ namespace Core::Game
             }
         }
 
+        if (cleared > 0) {
+            OnLineClear();
+            combo++;
+
+            OnCombo(combo);
+        }
+
         if (run > 0) {
             rowGaps[piece.y + 3] += run * 16.0f;
         }
 
+        // Spawn next piece
         Tile nextType = pieceRandomizer.GetNextPiece();
         currentPiece.Reset(nextPiece.type, nextPiece.rotation);
         nextPiece.Reset(nextType, initialRotationTable.pieces[nextType]);
+        OnPieceLock();
     }
 
-    std::pair<u8, u8> Game::GetGhostPiecePosition()
+    std::pair<i8, i8> Game::GetGhostPiecePosition()
     {
-        u8 intitialY = currentPiece.y;
+        i8 intitialY = currentPiece.y;
 
         while (PieceFits(currentPiece))
         {
             currentPiece.MoveDown();
         }
         currentPiece.MoveUp();
-        u8 ghostY = currentPiece.y;
+        i8 ghostY = currentPiece.y;
         currentPiece.y = intitialY;
 
         return std::make_pair(currentPiece.x, ghostY);
@@ -249,6 +263,7 @@ namespace Core::Game
             currentPiece.MoveDown();
         }
         currentPiece.MoveUp();
+        OnSonicDrop();
     }
 
     void Game::HardDrop()
@@ -259,43 +274,44 @@ namespace Core::Game
         }
         currentPiece.MoveUp();
         LockPiece(currentPiece);
+        OnHardDrop();
     }
 
-    void Game::ApplyEventStream(EventStream &stream)
+    void Game::ApplyInputStream(InputStream &stream)
     {
         while (stream.size > 0)
         {
-            GameEvent event = stream.events[--stream.size];
+            GameInput event = stream.events[--stream.size];
             switch (event)
             {
-            case GameEvent::MOVE_LEFT:
+            case GameInput::MOVE_LEFT:
                 MoveLeft();
                 break;
-            case GameEvent::INSTANT_LEFT:
+            case GameInput::INSTANT_LEFT:
                 InstantLeft();
                 break;
-            case GameEvent::INSTANT_RIGHT:
+            case GameInput::INSTANT_RIGHT:
                 InstantRight();
                 break;
-            case GameEvent::MOVE_RIGHT:
+            case GameInput::MOVE_RIGHT:
                 MoveRight();
                 break;
-            case GameEvent::RCW:
+            case GameInput::RCW:
                 RCW();
                 break;
-            case GameEvent::RCCW:
+            case GameInput::RCCW:
                 RCCW();
                 break;
-            case GameEvent::FLIP:
+            case GameInput::FLIP:
                 Flip();
                 break;
-            case GameEvent::SOFT_DROP:
+            case GameInput::SOFT_DROP:
                 SoftDrop();
                 break;
-            case GameEvent::SONIC_DROP:
+            case GameInput::SONIC_DROP:
                 SonicDrop();
                 break;
-            case GameEvent::HARD_DROP:
+            case GameInput::HARD_DROP:
                 HardDrop();
                 break;
             }

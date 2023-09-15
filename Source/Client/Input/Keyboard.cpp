@@ -91,11 +91,11 @@ namespace Client
                 {
                     if (profile.repeatPeriod == 0)
                     {
-                        output.push(Core::Game::GameEvent::INSTANT_LEFT);
+                        output.push(Core::Game::GameInput::INSTANT_LEFT);
                         return;
                     }
 
-                    output.push(Core::Game::GameEvent::MOVE_LEFT);
+                    output.push(Core::Game::GameInput::MOVE_LEFT);
                     timeUntilRepeat = profile.repeatPeriod;
                 }
             }
@@ -106,11 +106,11 @@ namespace Client
                 {
                     if (profile.repeatPeriod == 0)
                     {
-                        output.push(Core::Game::GameEvent::INSTANT_RIGHT);
+                        output.push(Core::Game::GameInput::INSTANT_RIGHT);
                         return;
                     }
 
-                    output.push(Core::Game::GameEvent::MOVE_RIGHT);
+                    output.push(Core::Game::GameInput::MOVE_RIGHT);
                     timeUntilRepeat = profile.repeatPeriod;
                 }
             }
@@ -122,11 +122,11 @@ namespace Client
                     // Just for completeness
                     if (profile.softdropPeriod == 0)
                     {
-                        output.push(Core::Game::GameEvent::HARD_DROP);
+                        output.push(Core::Game::GameInput::HARD_DROP);
                         return;
                     }
 
-                    output.push(Core::Game::GameEvent::SOFT_DROP);
+                    output.push(Core::Game::GameInput::SOFT_DROP);
                     timeUntilSoftdrop = profile.softdropPeriod;
                 }
             }
@@ -138,7 +138,7 @@ namespace Client
 
             if (scancode == profile.left)
             {
-                output.push(Core::Game::GameEvent::MOVE_LEFT);
+                output.push(Core::Game::GameInput::MOVE_LEFT);
                 lastKey = scancode;
                 timeUntilRepeat = profile.repeatDelay;
                 return;
@@ -146,7 +146,7 @@ namespace Client
 
             if (scancode == profile.right)
             {
-                output.push(Core::Game::GameEvent::MOVE_RIGHT);
+                output.push(Core::Game::GameInput::MOVE_RIGHT);
                 lastKey = scancode;
                 timeUntilRepeat = profile.repeatDelay;
                 return;
@@ -154,55 +154,55 @@ namespace Client
 
             if (scancode == profile.rotateLeft)
             {
-                output.push(Core::Game::GameEvent::RCCW);
+                output.push(Core::Game::GameInput::RCCW);
                 return;
             }
 
             if (scancode == profile.rotateRight)
             {
-                output.push(Core::Game::GameEvent::RCW);
+                output.push(Core::Game::GameInput::RCW);
                 return;
             }
 
             if (scancode == profile.flip)
             {
-                output.push(Core::Game::GameEvent::FLIP);
+                output.push(Core::Game::GameInput::FLIP);
                 return;
             }
 
             if (scancode == profile.softDrop)
             {
-                output.push(Core::Game::GameEvent::SOFT_DROP);
+                output.push(Core::Game::GameInput::SOFT_DROP);
                 timeUntilSoftdrop = profile.softdropDelay;
                 return;
             }
 
             if (scancode == profile.sonicDrop)
             {
-                output.push(Core::Game::GameEvent::SONIC_DROP);
+                output.push(Core::Game::GameInput::SONIC_DROP);
                 return;
             }
 
             if (scancode == profile.hardDrop)
             {
-                output.push(Core::Game::GameEvent::HARD_DROP);
+                output.push(Core::Game::GameInput::HARD_DROP);
                 return;
             }
 
             if (scancode == profile.instantLeft)
             {
-                output.push(Core::Game::GameEvent::INSTANT_LEFT);
+                output.push(Core::Game::GameInput::INSTANT_LEFT);
                 return;
             }
 
             if (scancode == profile.instantRight)
             {
-                output.push(Core::Game::GameEvent::INSTANT_RIGHT);
+                output.push(Core::Game::GameInput::INSTANT_RIGHT);
                 return;
             }
         }
 
-        Core::Game::EventStream Keyboard::GetInputStream()
+        Core::Game::InputStream Keyboard::GetInputStream()
         {
             return output.getStream();
         }
