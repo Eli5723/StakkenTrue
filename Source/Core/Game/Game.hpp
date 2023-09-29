@@ -9,6 +9,7 @@
 #include <utility>
 #include <cstring>
 #include <rocket.hpp>
+#include <Game/GameRules.hpp>
 
 namespace Core::Game
 {
@@ -65,8 +66,15 @@ namespace Core::Game
         void setGarbage(u8 hole) {
             memset(contents, GameTile::GARBAGE, sizeof(Tile) * BOARD_COLUMNS);
             contents[hole] = GameTile::EMPTY;
-            memset(connections, 0, sizeof(u8) * BOARD_COLUMNS);
+            memset(connections, DIRECTION::LEFT | DIRECTION::RIGHT | DIRECTION::DOWN, sizeof(u8) * BOARD_COLUMNS);
             fill = BOARD_COLUMNS - 1;
+
+            if (hole > 0) {
+                connections[hole - 1] &= ~DIRECTION::RIGHT;
+            }
+            if (hole < BOARD_COLUMNS - 1) {
+                connections[hole + 1] &= ~DIRECTION::LEFT;
+            }
         }
 
         inline bool filled()
@@ -166,8 +174,8 @@ namespace Core::Game
         XoroshiroRandomizer holeRandomizer{};
         u64 seed;
 
-        u32 gravityPeriod = 0;
-        u32 gravityTimer = 0;
+        i32 gravityPeriod = 500;
+        i32 gravityTimer = 0;
 
         u32 lockDelay = 300;
         u32 lockTimer = 0;
@@ -175,8 +183,12 @@ namespace Core::Game
         i32 comboTimer = 0;
         u32 combo = 0;
 
+        u32 garbagePending = 0;
+        i32 garbageRate = 500;
+        i32 garbageTimer = 0;
+
         constexpr static i32 ComboBonusTimeTable[]{
-            1200, 600, 300, 200, 100, 0, 0, 0, 0, 0, 0, 0, -100, -200, -300, -600, -1200, -1200
+            1200, 600, 300, 200, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
 
         constexpr static i32 ComboGarbageTable[]{
@@ -197,7 +209,7 @@ namespace Core::Game
         rocket::signal<void()> OnSonicDrop;
         rocket::signal<void()> OnHardDrop;
         rocket::signal<void(u32 combo)> OnCombo;
-        
+        rocket::signal<void()> OnTopOut;
 
         // Helpers
         inline bool BoundsY(u8 y)
@@ -226,7 +238,9 @@ namespace Core::Game
         void SetSeed(u64 seed);
         void RemoveRow(u8 y);
         void AddGarbage(u8 position);
+        void QueueGarbage(u32 garbage);
         bool PieceFits(Piece &piece);
+        void Gravity();
 
         void LockPiece(Piece &piece);
         bool OffsetTest();

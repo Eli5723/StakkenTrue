@@ -4,8 +4,6 @@
 #include <memory.h>
 #include <algorithm>
 
-#include <cstdio>
-
 namespace Core::Game
 {
 
@@ -37,14 +35,44 @@ namespace Core::Game
         {
             memcpy(&rows[i], &rows[i - 1], sizeof(Row));
         }
+
+        if (y < BOARD_ROWS - 1) {
+            for (int x = 0; x < BOARD_COLUMNS; x++)
+            {
+                rows[y + 1].connections[x] &= ~DIRECTION::UP;
+            }
+        }
+
+        if (y > 0) {
+            for (int x = 0; x < BOARD_COLUMNS; x++)
+            {
+                rows[y - 1].connections[x] &= ~DIRECTION::DOWN;
+            }
+        }
+
         rows[0].clear();
     }
 
     void Game::AddGarbage(u8 position)
     {
         memcpy(&rows[0], &rows[1], sizeof(Row) * (BOARD_ROWS - 1));
-        rows[BOARD_ROWS - 1].clear();
         rows[BOARD_ROWS - 1].setGarbage(position);
+
+        for (int x = 0; x < BOARD_COLUMNS; x++) {
+            // Connect garbage to the row above
+            if (rows[BOARD_ROWS - 2].contents[x] == GameTile::GARBAGE) {
+                rows[BOARD_ROWS - 1].connections[x] |= DIRECTION::UP;
+            }
+            if (rows[BOARD_ROWS - 1].contents[x] == GameTile::EMPTY) {
+                rows[BOARD_ROWS - 2].connections[x] &= ~DIRECTION::DOWN;
+            }
+        }
+    }
+
+    void Game::QueueGarbage(u32 lines)
+    {
+        garbagePending += lines;
+        garbageTimer = garbageRate;
     }
 
     bool Game::PieceFits(Piece &piece)
@@ -72,6 +100,16 @@ namespace Core::Game
         }
 
         return true;
+    }
+
+    void Game::Gravity()
+    {
+        currentPiece.MoveDown();
+        if (!PieceFits(currentPiece))
+        {
+            currentPiece.MoveUp();
+            LockPiece(currentPiece);
+        }
     }
 
     void Game::LockPiece(Piece &piece)
@@ -105,6 +143,8 @@ namespace Core::Game
             OnLineClear();
             combo++;
 
+            comboTimer += ComboTimeTable[combo] + cleared * ComboBonusTimeTable[combo];
+
             OnCombo(combo);
         }
 
@@ -117,6 +157,11 @@ namespace Core::Game
         currentPiece.Reset(nextPiece.type, nextPiece.rotation);
         nextPiece.Reset(nextType, initialRotationTable.pieces[nextType]);
         OnPieceLock();
+
+        if (!PieceFits(currentPiece))
+        {
+            OnTopOut();
+        }
     }
 
     std::pair<i8, i8> Game::GetGhostPiecePosition()
@@ -176,7 +221,34 @@ namespace Core::Game
         float fdelta = (float)dt / 1000.0f;
 
         for (int i=0; i < BOARD_ROWS; i++) {
-            rowGaps[i] = std::max(rowGaps[i] - fdelta*196.0f, 0.0f);
+            rowGaps[i] = std::max(rowGaps[i] - fdelta*256.0f, 0.0f);
+        }
+
+        printf("Gravity timer: %d\n", gravityTimer);
+
+        // gravityTimer -= dt;
+        // if (gravityTimer < 0) {
+        //     gravityTimer += gravityPeriod;
+        //     Gravity();
+        // }
+        if (comboTimer > 0) {
+            comboTimer -= dt;
+            if (comboTimer < 0) {
+                combo = 0;
+                comboTimer = 0;
+            }
+        }
+ 
+
+        if (garbagePending > 0) {
+            garbageTimer -= dt;
+            if (garbageTimer < 0) {
+                garbagePending--;
+                garbageTimer += garbageRate;
+                AddGarbage((u8)(holeRandomizer.next() % BOARD_COLUMNS));
+            }
+        } else {
+            garbageTimer = std::max(garbageTimer - dt, 0);
         }
     }
 

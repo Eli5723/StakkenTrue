@@ -9,7 +9,7 @@ namespace Game
     void setActivePallete(ColorPalette* pallete);
 
     void drawRow(glm::vec2 position, Core::Game::Row& row);
-    void drawBoard(glm::vec2 position, Core::Game::Game& game);
+    void drawBoard(glm::vec2 position, Core::Game::Game& game, float rise = 0.0f);
     void drawPiece(glm::vec2 position, Core::Game::Tile type, i8 rotation);
     void drawGhostPiece(glm::vec2 position, Core::Game::Tile type, i8 rotation);
 

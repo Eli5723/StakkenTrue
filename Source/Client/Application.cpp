@@ -106,8 +106,15 @@ namespace Application
                 Audio::Sound::Play(Audio::Sound::SoundID::Combo14);
             }
         };
+        testGame.OnTopOut += []() {
+            Audio::Sound::Play(Audio::Sound::SoundID::GameOver);
+            testGame.StartGame();
+        };
+
+
 
         testGame.StartGame();
+        testGame.QueueGarbage(10);
 
         set_resolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
@@ -152,19 +159,23 @@ namespace Application
             transform = glm::scale(transform, {1.3f, 1.3f, 1.0f});
             Engine::Draw::Quad::SetTransformationMatrix(transform);
             Engine::Draw::Line::SetTransformationMatrix(transform);
-            Game::drawGame({20.0f, 20.0f}, testGame);
+            Game::drawGame({20.0f, 80.0f}, testGame);
             Engine::Draw::Quad::Finish();
             Engine::Draw::Line::Finish();
+            
+            Engine::Draw::Text::Immediate({20.0f, 50.0f}, "Awesome Player", *font);
 
-            char comboText[32];
-            sprintf(comboText, "Combo: %d", testGame.combo);
+            char comboText[128];
+            sprintf(comboText, "Combo %d\nGarbage %d\nGarbageTimer %d",
+            testGame.combo,
+            testGame.garbagePending,
+            testGame.garbageTimer);
             Engine::Draw::Text::Immediate({Game::GAME_SIZE.x, 92.0f}, comboText, *font);
 
             Engine::Draw::Quad::SetTransformationMatrix(glm::mat4(1.0f));
             Engine::Draw::Line::SetTransformationMatrix(glm::mat4(1.0f));
 
             UI::Render();
-
 
             Engine::View::EndFrame();
 
@@ -253,6 +264,9 @@ namespace Application
 
         if (event.keysym.sym == SDLK_F3)
             Audio::Music::NextSong();
+
+        if (event.keysym.sym == SDLK_F4)
+            testGame.QueueGarbage(10);
 
         keyboard.KeyDown(event);
     }

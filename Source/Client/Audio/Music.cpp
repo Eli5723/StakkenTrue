@@ -68,9 +68,9 @@ namespace Audio::Music {
         state.songs.clear();
         for (const auto & entry : std::filesystem::directory_iterator("./Resources/Music")) {
             if (entry.path().extension() == ".mod" || 
-                entry.path().extension() == ".it" || 
+                entry.path().extension() == ".it"  || 
                 entry.path().extension() == ".s3m" || 
-                entry.path().extension() == ".xm" || 
+                entry.path().extension() == ".xm"  || 
                 entry.path().extension() == ".wav" || 
                 entry.path().extension() == ".ogg" || 
                 entry.path().extension() == ".mp3"
@@ -81,12 +81,17 @@ namespace Audio::Music {
         
         // If music is already playing, re-set the track
         if (state.music){
-            u32 songIndex = 0;
+            u32 songIndex = -1;
             for (u32 i = 0; i < state.songs.size(); i++) {
                 if (state.songs[i] == state.current_song_name) {
                     songIndex = i;
                     break;
                 }
+            }
+            if (songIndex != -1) {
+                state.current_song = songIndex;
+            } else {
+                SetRandomTrack();
             }
         }
     }

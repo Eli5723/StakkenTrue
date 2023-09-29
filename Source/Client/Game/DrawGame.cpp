@@ -30,7 +30,9 @@ namespace Game
     // Colors
     const float GHOST_ALPHA = 0.6f;
     const glm::vec4 WHITE{1.0f, 1.0f, 1.0f, 1.0f};
+    const glm::vec4 lighter{1.0f, 1.0f, 1.0f, 0.6f};
     const glm::vec4 BLACK{0.0f, 0.0f, 0.0f, 1.0f};
+
 
     void setActiveTexture(Assets::Texture *texture)
     {
@@ -49,19 +51,19 @@ namespace Game
         // // Draw connections
         if (!(connections & Core::Game::UP))
         {
-            Draw::Line::Line(position, {position.x + TILE_SIZE, position.y}, WHITE);
+            Draw::Line::Line(position, {position.x + TILE_SIZE, position.y}, lighter);
         }
         if (!(connections & Core::Game::RIGHT))
         {
-            Draw::Line::Line({position.x + TILE_SIZE, position.y}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE);
+            Draw::Line::Line({position.x + TILE_SIZE, position.y}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, lighter);
         }
         if (!(connections & Core::Game::DOWN))
         {
-            Draw::Line::Line({position.x, position.y + TILE_SIZE}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, WHITE);
+            Draw::Line::Line({position.x, position.y + TILE_SIZE}, {position.x + TILE_SIZE, position.y + TILE_SIZE}, lighter);
         }
         if (!(connections & Core::Game::LEFT))
         {
-            Draw::Line::Line(position, {position.x, position.y + TILE_SIZE}, WHITE);
+            Draw::Line::Line(position, {position.x, position.y + TILE_SIZE}, lighter);
         }
     }
 
@@ -89,12 +91,15 @@ namespace Game
     }
 
     void drawGame(glm::vec2 position, Core::Game::Game& game) {
-            drawBoard(position, game);
-            auto ghostPosition = game.GetGhostPiecePosition();
-            // Sum offsets below ghost piece
+            float rise = ((float)game.garbageTimer / (float)game.garbageRate) * TILE_SIZE;
 
-            drawGhostPiece(position + glm::vec2{ghostPosition.first * TILE_SIZE, (ghostPosition.second) * TILE_SIZE}, game.currentPiece.type, game.currentPiece.rotation);
-            drawPiece(position + glm::vec2{game.currentPiece.x * TILE_SIZE, (game.currentPiece.y) * TILE_SIZE}, game.currentPiece.type, game.currentPiece.rotation);
+            drawBoard(position, game, rise);
+            auto ghostPosition = game.GetGhostPiecePosition();
+
+            // Board rise due to garbage
+
+            drawGhostPiece(position + glm::vec2{ghostPosition.first * TILE_SIZE, (ghostPosition.second) * TILE_SIZE + rise}, game.currentPiece.type, game.currentPiece.rotation);
+            drawPiece(position + glm::vec2{game.currentPiece.x * TILE_SIZE, (game.currentPiece.y) * TILE_SIZE + rise}, game.currentPiece.type, game.currentPiece.rotation);
 
             // Draw piece preview
             Draw::Quad::BorderBox(position + glm::vec2{boardWidth + SCOREBOARD_GAP, 0.0f}, PREVIEW_SIZE, BORDER_WIDTH, WHITE, BLACK);
@@ -139,12 +144,13 @@ namespace Game
         } 
     }
 
-    void drawBoard(glm::vec2 position, Core::Game::Game& game) {
+    void drawBoard(glm::vec2 position, Core::Game::Game& game, float rise) {
         // Draw Border and background
         Draw::Quad::BorderBox(position, {boardWidth, BOARD_HEIGHT}, BORDER_WIDTH, WHITE, BLACK);
 
         // Draw Rows, starting from the bottom
-        float offset = BOARD_HEIGHT;
+        float offset = BOARD_HEIGHT + rise;
+
         for (int y = Core::Game::BOARD_ROWS - 1; y >= 0; y--) {
             // IF there is a gap, draw it and offset the next row
             offset-= game.rowGaps[y];

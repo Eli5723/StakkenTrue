@@ -55,7 +55,7 @@ namespace Engine::Draw::Background
 
         void main()
         {
-            FragColor = vec4(1.0f, 1.0f, 1.0f, .8f);
+            FragColor = vec4(1.0f, 1.0f, 1.0f, .4f);
         }
     )";
 
@@ -161,9 +161,12 @@ namespace Engine::Draw::Background
     }
 
     void Draw(){ 
+        // Clear to light blue
+        glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
         glUseProgram(shaderProgram);
-
-
         auto start = std::chrono::system_clock::now();
 
         float time = (float)(ctime() % 100000) / 1000.0f;
